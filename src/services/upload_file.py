@@ -2,6 +2,9 @@ import cloudinary
 import cloudinary.uploader
 
 
+"""UploadFileService is a service class that handles file uploads to Cloudinary."""
+
+
 class UploadFileService:
     def __init__(self, cloud_name, api_key, api_secret):
         self.cloud_name = cloud_name

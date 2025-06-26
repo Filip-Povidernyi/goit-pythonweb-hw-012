@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "goit-pythonweb-hw-10"
+name = "goit-pythonweb-hw-12"
 version = "0.1.0"
 description = ""
 authors = ["Filip-Povidernyi <p.poviderniy@gmail.com>"]
@@ -30,6 +30,13 @@ cloudinary = "^1.44.1"
 [tool.poetry.group.dev.dependencies]
 faker = "^37.3.0"
 asyncio = "^3.4.3"
+sphinx = "^8.2.3"
+pytest = "^8.4.1"
+factory-boy = "^3.3.3"
+testcontainers = "^4.10.0"
+pytest-asyncio = "^1.0.0"
+pytest-cov = "^6.2.1"
+aiosqlite = "^0.21.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

@@ -1,11 +1,13 @@
 from typing import List
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.inspection import inspect
 from datetime import datetime, timedelta
 
 from src.database.models import Contact, User
 from src.schemas import ContactModel, ContactResponse, ContactUpdate
+
+
+"""Repository for managing contacts in the database."""
 
 
 class ContactRepository:
@@ -13,12 +15,14 @@ class ContactRepository:
         self.db = session
 
     async def get_contacts(self, user: User, skip: int = 0, limit: int = 10) -> List[ContactModel]:
+        """Get a list of contacts for the current user with pagination."""
         query = select(Contact).filter(Contact.user_id ==
                                        user.id).offset(skip).limit(limit)
         result = await self.db.execute(query)
         return result.scalars().all()
 
     async def get_contact_by_id(self, contact_id: int, user: User):
+        """Get a contact by its ID for the current user."""
         contact = await self.db.execute(
             select(Contact).filter(Contact.id ==
                                    contact_id, Contact.user_id == user.id)
@@ -26,6 +30,7 @@ class ContactRepository:
         return contact.scalars().first()
 
     async def create_contact(self, contact: ContactModel, user: User) -> ContactModel:
+        """Create a new contact for the current user."""
         result = Contact(**contact.model_dump(), user_id=user.id)
         self.db.add(result)
         await self.db.commit()
@@ -33,6 +38,7 @@ class ContactRepository:
         return result
 
     async def update_contact(self, contact_id: int, contact_data: ContactUpdate, user: User) -> ContactResponse | None:
+        """Update an existing contact for the current user."""
         result = await self.db.execute(
             select(Contact).filter(Contact.id ==
                                    contact_id, Contact.user_id == user.id)
@@ -49,6 +55,7 @@ class ContactRepository:
         return None
 
     async def delete_contact(self, contact_id: int, user: User) -> ContactModel | None:
+        """Delete a contact by its ID for the current user."""
         q_contact = await self.get_contact_by_id(contact_id, user)
         if q_contact:
             await self.db.delete(q_contact)
@@ -57,7 +64,7 @@ class ContactRepository:
         return q_contact
 
     async def search_contacts(self, query: str, user: User) -> List[ContactResponse]:
-
+        """Search for contacts by name, last name, email, or phone number."""
         stmt = select(Contact).where(
             (Contact.name.ilike(f'%{query}%')) |
             (Contact.last_name.ilike(f'%{query}%')) |
@@ -70,6 +77,7 @@ class ContactRepository:
         return [ContactResponse.model_validate(contact) for contact in contacts]
 
     async def get_birthdays(self, days: int, user: User) -> List[ContactResponse]:
+        """Get contacts with birthdays in the next specified number of days."""
         today = datetime.today()
         end = today + timedelta(days=days)
         days_range = [
@@ -83,7 +91,3 @@ class ContactRepository:
         contacts = result.scalars().all()
 
         return [ContactResponse.model_validate(contact) for contact in contacts]
-
-    async def get_contacts_count(self) -> int:
-        result = await self.db.execute(select(func.count()).select_from(Contact))
-        return result.scalar_one()

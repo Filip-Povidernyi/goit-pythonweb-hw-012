@@ -8,15 +8,18 @@ from src.services.users import UserService
 from src.database.db import get_db
 from src.services.email import send_email
 
+"""API router for authentication-related endpoints"""
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=User, status_code=status.HTTP_201_CREATED)
 async def register_user(user_data: UserCreate, bg_tasks: BackgroundTasks, request: Request, db: AsyncSession = Depends(get_db)):
+    """Register a new user."""
     user_service = UserService(db)
 
     email_user = await user_service.get_user_by_email(user_data.email)
+
     if email_user:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -40,6 +43,7 @@ async def register_user(user_data: UserCreate, bg_tasks: BackgroundTasks, reques
 async def login_user(
     form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
 ):
+    """Login a user and return access and refresh tokens."""
     user_service = UserService(db)
     user = await user_service.get_user_by_username(form_data.username)
     if not user or not Hash().verify_password(form_data.password, user.hashed_password):
@@ -70,6 +74,7 @@ async def login_user(
 
 @router.post("/refresh-token", response_model=Token)
 async def new_token(request: TokenRefreshRequest, db: AsyncSession = Depends(get_db)):
+    """Refresh access token using a valid refresh token."""
     user = await verify_refresh_token(request.refresh_token, db)
     if user is None:
         raise HTTPException(
@@ -86,6 +91,7 @@ async def new_token(request: TokenRefreshRequest, db: AsyncSession = Depends(get
 
 @router.get("/confirm-email/{token}")
 async def confirm_email(token: str, db: AsyncSession = Depends(get_db)):
+    """Confirm user's email using a token."""
     service = UserService(db)
     email = await get_email_from_token(token)
     user = await service.get_user_by_email(email)

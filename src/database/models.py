@@ -6,11 +6,15 @@ from sqlalchemy.orm import mapped_column, Mapped, DeclarativeBase, relationship
 from sqlalchemy.sql.sqltypes import DateTime, Date, Boolean
 
 
+"""Base models for the database, defining User and Contact models with relationships."""
+
+
 class Base(DeclarativeBase):
     pass
 
 
 class User(Base):
+    """User model representing a user in the system."""
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -22,6 +26,7 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now())
     avatar: Mapped[str] = mapped_column(String(255), nullable=True)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     refresh_token: Mapped[str] = mapped_column(String, nullable=True)
     contacts: Mapped[list["Contact"]] = relationship(
         "Contact",
@@ -34,6 +39,7 @@ class User(Base):
 
 
 class Contact(Base):
+    """Contact model representing a contact associated with a user."""
     __tablename__ = "contacts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)

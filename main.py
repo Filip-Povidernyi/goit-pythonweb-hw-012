@@ -12,6 +12,9 @@ from src.database.db import sessionmanager
 from src.database.models import Base
 from limiter import limiter
 
+
+"""Main application entry point for the FastAPI application."""
+
 app = FastAPI()
 app.state.limiter = limiter
 app.add_middleware(SlowAPIMiddleware)
@@ -28,6 +31,7 @@ app.add_middleware(
 
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    """Handle rate limit exceeded exceptions."""
     return JSONResponse(
         status_code=429,
         content={"error": "Too many requests."},
@@ -36,6 +40,7 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Handle request validation errors."""
     return JSONResponse(
         status_code=HTTP_400_BAD_REQUEST,
         content={"detail": exc.errors()},
@@ -44,6 +49,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.on_event("startup")
 async def create_tables():
+    """Create database tables on application startup."""
     async with sessionmanager._engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 

@@ -16,23 +16,35 @@ from src.database.models import User
 from src.services.users import UserService
 
 
+"""Service for handling authentication-related operations, including token creation and password hashing."""
+
+
 class Hash:
+    """Class for hashing and verifying passwords using bcrypt."""
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def verify_password(self, plain_password, hashed_password):
+        """Verify a plain password against a hashed password."""
+        """Returns True if the plain password matches the hashed password, otherwise False."""
         return self.pwd_context.verify(plain_password, hashed_password)
 
     def get_password_hash(self, password: str):
+        """Hash a plain password using bcrypt."""
+        """Returns the hashed password."""
         return self.pwd_context.hash(password)
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+"""OAuth2PasswordBearer is a class that provides a way to extract the token from the request.
+It is used to secure endpoints that require authentication."""
 r = redis.Redis(host=config.REDIS_HOST, port=config.REDIS_PORT, db=0)
 
 
 def create_token(
     data: dict, expires_delta: timedelta, token_type: Literal["access", "refresh", "email"]
 ):
+    """Create a JWT token with the given data and expiration time."""
+    """The token will include the expiration time, issued at time, and token type."""
     to_encode = data.copy()
     now = datetime.now(UTC)
     expire = now + expires_delta
@@ -43,6 +55,8 @@ def create_token(
 
 
 async def create_access_token(data: dict, expires_delta: Optional[int] = None):
+    """Create an access token with the given data and optional expiration time."""
+    """If expires_delta is provided, it will be used as the expiration time."""
     if expires_delta:
         access_token = create_token(data, expires_delta, "access")
     else:
@@ -54,6 +68,8 @@ async def create_access_token(data: dict, expires_delta: Optional[int] = None):
 
 
 async def create_refresh_token(data: dict, expires_delta: Optional[float] = None):
+    """Create a refresh token with the given data and optional expiration time."""
+    """If expires_delta is provided, it will be used as the expiration time."""
     if expires_delta:
         refresh_token = create_token(data, expires_delta, "refresh")
     else:
@@ -65,6 +81,8 @@ async def create_refresh_token(data: dict, expires_delta: Optional[float] = None
 
 
 def create_email_token(data: dict, expires_delta: Optional[int] = None):
+    """Create an email verification token with the given data and optional expiration time."""
+    """If expires_delta is provided, it will be used as the expiration time."""
 
     if expires_delta:
         email_token = create_token(data, expires_delta, "email")
@@ -79,6 +97,12 @@ def create_email_token(data: dict, expires_delta: Optional[int] = None):
 async def get_current_user(
     token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)
 ) -> User:
+    """Get the current user from the token.
+    This function decodes the JWT token, retrieves the username from the payload
+    and fetches the user from the database or cache.
+    If the user is not found in the cache, it queries the database and caches the user.
+    If the token is invalid or the user is not found, it raises an HTTPException."""
+    """If the user is found, it returns the User object."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -112,6 +136,9 @@ async def get_current_user(
 
 
 async def verify_refresh_token(refresh_token: str, db: AsyncSession):
+    """Verify the refresh token by decoding it and checking the username and token type."""
+    """If the token is valid, it retrieves the user from the database using the username and refresh token."""
+    """If the token is invalid or the user is not found, it returns None."""
     try:
         payload = jwt.decode(refresh_token, config.JWT_SECRET,
                              algorithms=[config.JWT_ALGORITHM])
@@ -133,6 +160,7 @@ async def verify_refresh_token(refresh_token: str, db: AsyncSession):
 
 
 async def get_email_from_token(token: str) -> str:
+    """Extract the email from the email verification token."""
     try:
         payload = jwt.decode(
             token, config.JWT_SECRET, algorithms=[config.JWT_ALGORITHM]
