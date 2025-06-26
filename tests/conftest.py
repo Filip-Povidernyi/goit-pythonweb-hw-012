@@ -1,13 +1,16 @@
+import pytest
+import asyncio
+from sqlalchemy.pool import NullPool
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+from httpx import AsyncClient, ASGITransport
+from unittest.mock import MagicMock, patch
+
+
 from src.services.auth import create_access_token
 from main import app
 from src.services.auth import Hash
 from src.database.db import get_db
 from src.database.models import Base, User, Contact
-from sqlalchemy.pool import NullPool
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
-from httpx import AsyncClient, ASGITransport
-import pytest
-import asyncio
 
 
 TEST_DB_URL = "sqlite+aiosqlite:///./test.db"
@@ -22,6 +25,19 @@ test_user_data = {
     "password": "123456789",
     "is_admin": False,
 }
+
+
+@pytest.fixture(autouse=True)
+def mock_redis():
+    """Автоматичне мокання глобального Redis-з'єднання."""
+    mock_r = MagicMock()
+    mock_r.get.return_value = None
+    mock_r.set.return_value = True
+    mock_r.expire.return_value = True
+
+    # ВАЖЛИВО: точно вказуємо імпортовану змінну `r` в auth.py
+    with patch("src.services.auth.r", mock_r):
+        yield mock_r
 
 
 @pytest.fixture(scope="session")

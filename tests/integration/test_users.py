@@ -17,11 +17,12 @@ async def test_get_current_user(client: AsyncClient, db_session):
         email="test@example.com",
         hashed_password=Hash().get_password_hash("password123"),
         is_verified=True,
+        avatar="https://example.com/avatar.jpg",
     )
     db_session.add(user)
     await db_session.commit()
 
-    token = await create_access_token(data={"sub": user.email})
+    token = await create_access_token(data={"sub": user.username})
 
     response = await client.get(
         "/api/users/me",
@@ -41,11 +42,12 @@ async def test_update_avatar_admin_success(client: AsyncClient, db_session):
         hashed_password=Hash().get_password_hash("adminpass"),
         is_verified=True,
         is_admin=True,
+        avatar="https://example.com/avatar.jpg",
     )
     db_session.add(user)
     await db_session.commit()
 
-    token = await create_access_token(data={"sub": user.email})
+    token = await create_access_token(data={"sub": user.username})
 
     with open("tests/data/avatar.png", "rb") as avatar_file:
         response = await client.patch(
@@ -72,7 +74,7 @@ async def test_update_avatar_not_admin(client: AsyncClient, db_session):
     db_session.add(user)
     await db_session.commit()
 
-    token = await create_access_token(data={"sub": user.email})
+    token = await create_access_token(data={"sub": user.username})
 
     with open("tests/data/avatar.png", "rb") as avatar_file:
         response = await client.patch(
@@ -96,11 +98,12 @@ async def test_update_password_success(client: AsyncClient, db_session):
         email="change@example.com",
         hashed_password=Hash().get_password_hash(password),
         is_verified=True,
+        avatar="https://example.com/avatar.jpg",
     )
     db_session.add(user)
     await db_session.commit()
 
-    token = await create_access_token(data={"sub": user.email})
+    token = await create_access_token(data={"sub": user.username})
 
     payload = {
         "old_password": password,
@@ -127,11 +130,12 @@ async def test_update_password_wrong_old(client: AsyncClient, db_session):
         email="wrong@example.com",
         hashed_password=Hash().get_password_hash("realpass"),
         is_verified=True,
+        avatar="https://example.com/avatar.jpg",
     )
     db_session.add(user)
     await db_session.commit()
 
-    token = await create_access_token(data={"sub": user.email})
+    token = await create_access_token(data={"sub": user.username})
 
     payload = {
         "old_password": "wrongpass",
@@ -158,11 +162,12 @@ async def test_update_password_mismatch(client: AsyncClient, db_session):
         email="mismatch@example.com",
         hashed_password=Hash().get_password_hash("pass"),
         is_verified=True,
+        avatar="https://example.com/avatar.jpg",
     )
     db_session.add(user)
     await db_session.commit()
 
-    token = await create_access_token(data={"sub": user.email})
+    token = await create_access_token(data={"sub": user.username})
 
     payload = {
         "old_password": "pass",
