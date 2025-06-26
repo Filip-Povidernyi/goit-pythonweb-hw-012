@@ -2,6 +2,10 @@ from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
 
 
+"""Configuration settings for the application.
+This module defines the settings required for the application to run,"""
+
+
 class Settings(BaseSettings):
     DB_URL: str
 

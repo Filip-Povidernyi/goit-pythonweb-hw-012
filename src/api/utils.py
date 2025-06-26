@@ -4,11 +4,14 @@ from sqlalchemy import text
 
 from src.database.db import get_db
 
+"""API router for utility endpoints"""
+
 router = APIRouter(tags=["utils"])
 
 
 @router.get("/healthchecker")
 async def healthchecker(db: AsyncSession = Depends(get_db)):
+    """Health check endpoint to verify database connection."""
     try:
         # Виконуємо асинхронний запит
         result = await db.execute(text("SELECT 1"))

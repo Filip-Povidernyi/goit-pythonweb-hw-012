@@ -9,6 +9,8 @@ from src.services.auth import get_current_user
 from src.services.contacts import ContactService
 
 
+"""API router for contact-related endpoints"""
+
 router = APIRouter(prefix="/contacts", tags=["contacts"])
 
 
@@ -18,6 +20,7 @@ async def get_contacts(
         limit: int = 10,
         db: AsyncSession = Depends(get_db),
         user: User = Depends(get_current_user)) -> List[ContactResponse]:
+    """Get a list of contacts for the current user with pagination."""
 
     service = ContactService(db)
     contacts = await service.get_contacts(user, skip=skip, limit=limit)
@@ -30,6 +33,7 @@ async def get_contacts(
 
 @router.get("/search", response_model=List[ContactResponse])
 async def search_contacts(query: str, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)):
+    """Search for contacts by name or email."""
     if not query:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail="Query parameter is required")
@@ -46,6 +50,7 @@ async def search_contacts(query: str, db: AsyncSession = Depends(get_db), user: 
 
 @router.get("/birthdays", response_model=List[ContactResponse])
 async def get_birthdays_in_next_days(days: int = 7, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)) -> List[ContactResponse]:
+    """Get contacts with birthdays in the next specified number of days."""
     if days <= 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Days must be a positive integer")
@@ -60,7 +65,7 @@ async def get_birthdays_in_next_days(days: int = 7, db: AsyncSession = Depends(g
 
 @router.get("/{contact_id}", response_model=ContactResponse)
 async def get_contact_by_id(contact_id: int, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)) -> ContactResponse:
-
+    """Get a contact by its ID."""
     service = ContactService(db)
     contact = await service.get_contact_by_id(contact_id, user)
 
@@ -73,12 +78,14 @@ async def get_contact_by_id(contact_id: int, db: AsyncSession = Depends(get_db),
 
 @router.post("/", response_model=ContactResponse, status_code=status.HTTP_201_CREATED)
 async def create_contact(contact: ContactCreate, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)):
+    """Create a new contact."""
     service = ContactService(db)
     return await service.create_contact(contact, user)
 
 
 @router.put("/{contact_id}", response_model=ContactResponse)
 async def update_contact(contact_id: int, contact_data: ContactUpdate, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)):
+    """Update an existing contact by its ID."""
     service = ContactService(db)
     updated_contact = await service.update_contact(contact_id, contact_data, user)
 
@@ -91,6 +98,7 @@ async def update_contact(contact_id: int, contact_data: ContactUpdate, db: Async
 
 @router.delete("/{contact_id}", response_model=ContactResponse)
 async def delete_contact(contact_id: int, db: AsyncSession = Depends(get_db), user: User = Depends(get_current_user)):
+    """Delete a contact by its ID."""
     service = ContactService(db)
     deleted_contact = await service.delete_contact(contact_id, user)
 

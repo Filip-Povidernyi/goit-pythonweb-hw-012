@@ -6,6 +6,8 @@ from src.services.auth import create_email_token
 from src.conf.config import config
 
 
+"""Service for sending emails using FastAPI Mail."""
+
 conf = ConnectionConfig(
     MAIL_USERNAME=config.MAIL_SMTP_USERNAME,
     MAIL_PASSWORD=config.MAIL_SMTP_PASSWORD,
@@ -22,6 +24,8 @@ conf = ConnectionConfig(
 
 
 async def send_email(email: str, username: str, host: str):
+    """Send a verification email to the user."""
+    """This function generates a token for email verification and sends an email using FastAPI Mail."""
     try:
         token_email = create_email_token({"sub": email})
         message = MessageSchema(

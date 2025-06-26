@@ -6,6 +6,9 @@ from src.repository.contacts import ContactRepository
 from src.schemas import ContactModel, ContactResponse, ContactUpdate
 
 
+"""Service for managing contacts, providing an interface for CRUD operations."""
+
+
 class ContactService:
     def __init__(self, db: AsyncSession):
         self.repository = ContactRepository(db)
