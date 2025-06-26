@@ -101,6 +101,20 @@ REST API repository Users
   :undoc-members:
   :show-inheritance:
 
+REST API database Models
+===================================
+.. automodule:: src.database.models
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
+REST API Schemas
+============================
+.. automodule:: src.schemas
+  :members:
+  :undoc-members:
+  :show-inheritance:
+
 
 Indices and tables
 ======================
